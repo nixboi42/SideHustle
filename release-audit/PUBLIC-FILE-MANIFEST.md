@@ -1,0 +1,51 @@
+# Exact proposed public source manifest
+
+47 regular files. This list and public-files.txt enumerate the entire intended Git index, including this report. No directories are recursively allowlisted. build/, dist/, .git/ and surrounding research/audit-private evidence are excluded. Binaries are separate, unapproved distribution artifacts.
+
+- `.gitattributes`
+- `.github/ISSUE_TEMPLATE/bug_report.md`
+- `.github/dependabot.yml`
+- `.github/pull_request_template.md`
+- `.github/workflows/build.yml`
+- `.gitignore`
+- `CHANGELOG.md`
+- `CONTRIBUTING.md`
+- `Info.plist`
+- `LICENSE`
+- `PRIVACY.md`
+- `README.md`
+- `SECURITY.md`
+- `Sources/SCBridge.h`
+- `Sources/SCBridge.m`
+- `Sources/main.m`
+- `THIRD-PARTY-NOTICES.md`
+- `Tests/release-tests.py`
+- `Tests/session-tests.m`
+- `docs/COMPATIBILITY.md`
+- `docs/HARDWARE-VALIDATION.md`
+- `docs/INSTALLATION.md`
+- `docs/RELEASING.md`
+- `docs/TROUBLESHOOTING.md`
+- `public-files.txt`
+- `release-audit/APPLE-IP-AUDIT.md`
+- `release-audit/DEPENDENCY-AUDIT.md`
+- `release-audit/FINAL-REPORT.md`
+- `release-audit/GITHUB-READINESS.md`
+- `release-audit/INSTALLATION-AUDIT.md`
+- `release-audit/PRIVACY-AUDIT.md`
+- `release-audit/PRIVILEGE-AUDIT.md`
+- `release-audit/PUBLIC-FILE-MANIFEST.md`
+- `release-audit/RELEASE-CHECKLIST.md`
+- `release-audit/SECRETS-AUDIT.md`
+- `release-audit/SECURITY-AUDIT.md`
+- `release-audit/TEST-RESULTS.md`
+- `release-audit/sbom.cdx.json`
+- `scripts/analyze.sh`
+- `scripts/build.sh`
+- `scripts/install.sh`
+- `scripts/make-icon.m`
+- `scripts/package.sh`
+- `scripts/path-safety.sh`
+- `scripts/source-archive.py`
+- `scripts/test.sh`
+- `scripts/verify-public-tree.py`
