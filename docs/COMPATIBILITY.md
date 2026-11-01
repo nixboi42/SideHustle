@@ -56,7 +56,9 @@ stack-frame sizes and argument offsets are ignored. Missing or incompatible APIs
 disable connection controls before creating a service or requesting discovery.
 
 CI runs mock lifecycle/type checks, static analysis and an arm64 app build on
-macOS 14, 15 and 26 runners. macOS 13 is the deployment minimum but has no hosted
-runner in this matrix. CI does not establish physical receiver compatibility or
+macOS 15 and 26 runners. macOS 13 remains the deployment minimum. macOS 13
+has no hosted runner in this matrix; the macOS 14 runner was removed after GitHub
+cancelled it during its scheduled retirement brownout (retirement November 2, 2026).
+Neither macOS 13 nor 14 has hosted test coverage. CI does not establish physical receiver compatibility or
 validate private API behavior on every supported OS. The only physical evidence
 remains the historical configuration above.

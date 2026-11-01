@@ -6,7 +6,7 @@
 - Validate required native symbols, classes and callable method types at runtime.
 - Ignore compiler stack sizes/offsets while rejecting incompatible argument/return types.
 - Keep build numbers as diagnostics, with a fallback if the build cannot be read.
-- Add type-check regression tests and macOS 14/15/26 CI coverage.
+- Add type-check regression tests and macOS 15/26 CI coverage.
 - Bump application version to 0.3.0 / build 3; additional OS versions remain physically unverified.
 
 ## 0.2.0 — expanded legacy iPad eligibility
