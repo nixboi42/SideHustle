@@ -20,6 +20,7 @@ Tests/session-tests.m
 docs/COMPATIBILITY.md
 docs/HARDWARE-VALIDATION.md
 docs/INSTALLATION.md
+docs/RELEASE-NOTES.md
 docs/RELEASING.md
 docs/TROUBLESHOOTING.md
 public-files.txt

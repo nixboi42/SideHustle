@@ -1,5 +1,8 @@
 # Final release audit — CONDITIONAL PASS
 
+> Historical audit of the initial source snapshot. Statements below about withheld publication, source-only distribution or pending owner authorization record that earlier audit. Current app downloads and release procedures are documented in [README](../README.md) and [Releasing](../docs/RELEASING.md). Current experimental binaries are ad-hoc signed, without Developer ID signing or notarization.
+
+
 The isolated source candidate is technically prepared for owner review. No known exposed credential, critical exploitable vulnerability or proprietary binary redistribution was found in that source snapshot. Publication remains withheld pending the decisions below; downloadable binary distribution is not ready.
 
 Original scope: 18 indexed files; 39 non-Git files including ignored artifacts; zero commits, branches with commits or tags; 27 stored blobs including nine dangling originals. Archives were expanded (59 scan payload files, with overlap). All original app source, scripts, tests, docs and CI were read. All final source paths are enumerated in PUBLIC-FILE-MANIFEST.md and public-files.txt. The surrounding research is private, excluded, and not comprehensively cleared for publication.

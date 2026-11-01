@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3.1 — downloadable app preview
+
+- Publish an ad-hoc signed Apple silicon app ZIP, source archive and SHA-256 checksums from tag-triggered GitHub CI.
+- Verify the packaged app before publication; require build/audit checks before the release job.
+- Replace source-only installation wording with app download and installation instructions.
+- Bump application version to 0.3.1 / build 4. Developer ID signing and notarization are not included.
+
 ## 0.3.0 — macOS runtime compatibility
 
 - Accept macOS 13 or later on Apple silicon without a fixed build or framework UUID.
@@ -17,7 +24,7 @@
 - Add model-policy regression coverage and document model identifiers and receiver OS limits.
 - Bump the app to version 0.2.0 / build 2. Newly enabled models remain experimentally allowlisted, not physically verified.
 
-## 0.1.0 — experimental source preview (publication pending)
+## 0.1.0 — experimental source preview
 
 - Native menu bar app with device selection and connect/disconnect controls.
 - Caller-local support for genuine iPad 5 discovery objects; no system patch.

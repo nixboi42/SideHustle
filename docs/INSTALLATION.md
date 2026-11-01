@@ -1,5 +1,11 @@
 # Install, remove and recover
 
+Download the Apple silicon app ZIP from [GitHub Releases](https://github.com/nixboi42/SideHustle/releases), extract **SideHustle.app**, and move it to `~/Applications` or `/Applications`. Requires macOS 13 or later. To check the archive, run `shasum -a 256 SideHustle-0.3.1-arm64.zip` and compare the result with its entry in the release’s `SHA256SUMS` file.
+
+Release builds are ad-hoc signed, without Developer ID signing or notarization. If macOS blocks the app, review the release and use the normal **Privacy & Security → Open Anyway** option if available. Do not disable Gatekeeper or SIP.
+
+## Build from source
+
 Build as an ordinary user, without sudo, using Xcode/Command Line Tools:
 `bash scripts/test.sh`, then `bash scripts/build.sh`. The build creates only
 application-owned output under build/. Local signatures are ad-hoc. Python 3 is
@@ -29,4 +35,4 @@ records, Apple frameworks or Continuity settings need deleting or restoring.
 
 No SIP, authenticated-root, AMFI, Gatekeeper, library-validation, screen-recording
 or Accessibility changes are installation steps. Do not disable them to work
-around errors. Signed/notarized binary distribution is a separate release gate.
+around errors. Developer ID signing and notarization are not provided by the current experimental releases.

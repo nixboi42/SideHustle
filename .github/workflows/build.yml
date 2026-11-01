@@ -66,3 +66,71 @@ jobs:
           cd "$GITHUB_WORKSPACE"
           "$RUNNER_TEMP/gitleaks" git --log-opts=--all --redact=100 --ignore-gitleaks-allow .
           "$RUNNER_TEMP/gitleaks" dir --redact=100 --ignore-gitleaks-allow --max-archive-depth=4 .
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [macos, secrets]
+    runs-on: macos-15
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      SIDECAR_SIGNING_IDENTITY: '-'
+    steps:
+      - name: Fetch the tagged source without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$GITHUB_SERVER_URL" == https://github.com ]]
+          [[ "$GITHUB_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]
+          [[ "$GITHUB_SHA" =~ ^[a-f0-9]{40}$ ]]
+          git init .
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git -c core.hooksPath=/dev/null fetch --no-tags --depth=1 origin "$GITHUB_SHA"
+          git -c core.hooksPath=/dev/null checkout --detach FETCH_HEAD
+      - name: Build and verify release archives
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Info.plist)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          [[ "$GITHUB_REF_NAME" == "v$version" ]]
+          python3 scripts/verify-public-tree.py
+          bash scripts/package.sh
+          archives=(dist/preview.*/SideHustle-"$version"-arm64.zip)
+          [[ ${#archives[@]} == 1 && -f "${archives[0]}" ]]
+          release_dir="$(dirname "${archives[0]}")"
+          (cd "$release_dir" && shasum -a 256 -c SHA256SUMS)
+          unpacked="$(mktemp -d "$RUNNER_TEMP/sidehustle-package.XXXXXX")"
+          ditto -x -k "${archives[0]}" "$unpacked"
+          app="$unpacked/SideHustle.app"
+          codesign --verify --strict --verbose=2 "$app"
+          lipo -verify_arch arm64 "$app/Contents/MacOS/SideHustle"
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")" == "$version" ]]
+          [[ "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app/Contents/Info.plist")" == 13.0 ]]
+          printf 'RELEASE_DIR=%s\n' "$release_dir" >> "$GITHUB_ENV"
+      - name: Upload verified assets and publish experimental app release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          zip="SideHustle-$version-arm64.zip"
+          source="SideHustle-$version-source.tar.gz"
+          gh release create "$GITHUB_REF_NAME" \
+            "$RELEASE_DIR/$zip" "$RELEASE_DIR/$source" "$RELEASE_DIR/SHA256SUMS" \
+            --repo "$GITHUB_REPOSITORY" --verify-tag --draft --prerelease \
+            --title "SideHustle $GITHUB_REF_NAME — experimental app preview" \
+            --notes-file docs/RELEASE-NOTES.md
+          gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --json assets > "$RUNNER_TEMP/sidehustle-assets.json"
+          python3 - "$RUNNER_TEMP/sidehustle-assets.json" "$RELEASE_DIR" "$zip" "$source" <<'PY'
+          import json, pathlib, sys
+          metadata, directory, *names = sys.argv[1:]
+          expected = {name: (pathlib.Path(directory) / name).stat().st_size for name in [*names, 'SHA256SUMS']}
+          actual = {item['name']: item['size'] for item in json.loads(pathlib.Path(metadata).read_text())['assets']}
+          if actual != expected:
+              raise SystemExit('Release asset names or sizes differ from verified local files')
+          print('PASS: all three release assets uploaded with expected sizes')
+          PY
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false

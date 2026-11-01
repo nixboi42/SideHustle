@@ -1,5 +1,8 @@
 # Release checklist
 
+> Historical audit of the initial source snapshot. Statements below about withheld publication, source-only distribution or pending owner authorization record that earlier audit. Current app downloads and release procedures are documented in [README](../README.md) and [Releasing](../docs/RELEASING.md). Current experimental binaries are ad-hoc signed, without Developer ID signing or notarization.
+
+
 - [x] Preserve original source, staged index and private research.
 - [x] Work in isolated audit copy on codex/release-security-audit.
 - [x] Inspect all original source, ignored artifacts, refs and stored blobs.

@@ -1,5 +1,8 @@
 # GitHub readiness
 
+> Historical audit of the initial source snapshot. Statements below about withheld publication, source-only distribution or pending owner authorization record that earlier audit. Current app downloads and release procedures are documented in [README](../README.md) and [Releasing](../docs/RELEASING.md). Current experimental binaries are ad-hoc signed, without Developer ID signing or notarization.
+
+
 Conclusion: CONDITIONAL PASS for the reviewed source snapshot, subject to owner decisions. Not approved for public binary distribution. No push/repository/release/tag/account operation performed. No history rewritten. The original project/index/research remains untouched; use the isolated audit copy only after review.
 
 Final CI has an explicit empty token-permissions map (public fetch needs no token), no secrets, no persisted credentials, no third-party actions, no pull_request_target/workflow_run trigger, no event expressions interpolated into shell source, no artifact uploads and no publish step. Git fetch validates server/repository/SHA environment values and disables hooks. It is intentionally public-github.com-only; private repos/other hosts need another reviewed design. Full fetched branches/tags plus current files are Gitleaks-scanned. A malicious fork can alter its own test workflow as with any PR; repository branch protection and trusted required checks remain owner settings.
