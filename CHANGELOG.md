@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.2 — release packaging correction
+
+- Correct the architecture-verification command that stopped the v0.3.1 workflow before publication.
+- Publish the app preview under a new tag without moving the failed tag.
+- Bump application version to 0.3.2 / build 5.
+
 ## 0.3.1 — downloadable app preview
 
 - Publish an ad-hoc signed Apple silicon app ZIP, source archive and SHA-256 checksums from tag-triggered GitHub CI.

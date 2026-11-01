@@ -104,7 +104,7 @@ jobs:
           ditto -x -k "${archives[0]}" "$unpacked"
           app="$unpacked/SideHustle.app"
           codesign --verify --strict --verbose=2 "$app"
-          lipo -verify_arch arm64 "$app/Contents/MacOS/SideHustle"
+          lipo "$app/Contents/MacOS/SideHustle" -verify_arch arm64
           [[ "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$app/Contents/Info.plist")" == "$version" ]]
           [[ "$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$app/Contents/Info.plist")" == 13.0 ]]
           printf 'RELEASE_DIR=%s\n' "$release_dir" >> "$GITHUB_ENV"

@@ -39,7 +39,7 @@ See the [full compatibility matrix](docs/COMPATIBILITY.md) for details.
 
 ## Install
 
-[Download SideHustle 0.3.1 for Apple silicon](https://github.com/nixboi42/SideHustle/releases/download/v0.3.1/SideHustle-0.3.1-arm64.zip), unzip it, and move **SideHustle.app** to `~/Applications` or `/Applications`. Requires macOS 13 or later.
+[Download SideHustle 0.3.2 for Apple silicon](https://github.com/nixboi42/SideHustle/releases/download/v0.3.2/SideHustle-0.3.2-arm64.zip), unzip it, and move **SideHustle.app** to `~/Applications` or `/Applications`. Requires macOS 13 or later.
 
 The app is an experimental, ad-hoc signed build without Apple Developer ID signing or notarization. If macOS blocks it, review the release and use the normal **System Settings → Privacy & Security → Open Anyway** option if available. Do not disable Gatekeeper or SIP. See [all releases and SHA-256 checksums](https://github.com/nixboi42/SideHustle/releases).
 

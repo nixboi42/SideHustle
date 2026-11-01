@@ -1,6 +1,6 @@
 # Install, remove and recover
 
-Download the Apple silicon app ZIP from [GitHub Releases](https://github.com/nixboi42/SideHustle/releases), extract **SideHustle.app**, and move it to `~/Applications` or `/Applications`. Requires macOS 13 or later. To check the archive, run `shasum -a 256 SideHustle-0.3.1-arm64.zip` and compare the result with its entry in the release’s `SHA256SUMS` file.
+Download the Apple silicon app ZIP from [GitHub Releases](https://github.com/nixboi42/SideHustle/releases), extract **SideHustle.app**, and move it to `~/Applications` or `/Applications`. Requires macOS 13 or later. To check the archive, run `shasum -a 256 SideHustle-0.3.2-arm64.zip` and compare the result with its entry in the release’s `SHA256SUMS` file.
 
 Release builds are ad-hoc signed, without Developer ID signing or notarization. If macOS blocks the app, review the release and use the normal **Privacy & Security → Open Anyway** option if available. Do not disable Gatekeeper or SIP.
 

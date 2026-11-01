@@ -15,4 +15,4 @@ version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$root
 ditto -c -k --norsrc --noextattr --keepParent "$root/build/SideHustle.app" "$release/SideHustle-${version}-arm64.zip"
 COPYFILE_DISABLE=1 python3 "$root/scripts/source-archive.py" "$release/SideHustle-${version}-source.tar.gz"
 (cd "$release" && shasum -a 256 SideHustle-${version}-arm64.zip SideHustle-${version}-source.tar.gz > SHA256SUMS)
-printf '%s\n' "Preview artifacts prepared in $release. Nothing uploaded. Signing/notarization requires separate authorization."
+printf '%s\n' "Preview artifacts prepared in $release. Ad-hoc signed; no notarization. Nothing uploaded."
