@@ -2,7 +2,7 @@
 
 **Use native Sidecar on an unsupported iPad.**
 
-SideHustle brings Apple's Sidecar to iPads that Apple leaves off its supported-device list, starting with **iPad 5**. Turn your iPad into a second display for your Mac using the built-in Sidecar experience—without installing an iPad app, patching system files or disabling SIP.
+SideHustle brings Apple's Sidecar to iPads that Apple leaves off its supported-device list, including **iPad Air 2, iPad mini 4 and iPad (5th generation)**. Turn your iPad into a second display for your Mac using the built-in Sidecar experience—without installing an iPad app, patching system files or disabling SIP.
 
 **Tested on iPad 5 running iPadOS 16.7.16.** Other device and OS combinations have not been verified. See [compatibility](#compatibility) before installing.
 
@@ -21,13 +21,15 @@ No jailbreak or administrator privileges are required by SideHustle. Normal Appl
 | Device or system | Current status |
 |---|---|
 | **iPad 5, Wi-Fi (`iPad6,11`), iPadOS 16.7.16** | The only physically tested iPad/OS combination; native connection and a working second display were observed. |
-| iPad 5, cellular (`iPad6,12`) | Enabled in the app, but untested. |
-| Other unsupported iPads | Not enabled by the current release. |
+| iPad (5th generation), cellular (`iPad6,12`) | Enabled; experimental and untested. |
+| iPad Air 2 (`iPad5,3`, `iPad5,4`) | Wi-Fi and cellular enabled; experimental and untested. |
+| iPad mini 4 (`iPad5,1`, `iPad5,2`) | Wi-Fi and cellular enabled; experimental and untested. |
+| Older iPads unable to run iPadOS 13 | Excluded. |
 | Apple-supported iPads | Apple's eligibility decision is retained; not separately tested with SideHustle. |
 | **Apple silicon Mac, macOS 27.2 / build `26B123`** | Current runtime target. The app also checks the installed Sidecar framework for compatibility. |
-| Other macOS builds or Intel Macs | Not supported by v0.1.0. |
+| Other macOS builds or Intel Macs | Not supported by v0.2.0. |
 
-SideHustle is intended to make Sidecar available on unsupported iPads. **The current release does not yet support a general macOS or iPadOS version range:** it deliberately stops on Mac builds other than `26B123`, and its additional device support is limited to iPad 5. The app's macOS 13 deployment target is not a claim that it runs on macOS 13–27.
+SideHustle is intended to make Sidecar available on unsupported iPads. **The current release does not yet support a general macOS or iPadOS version range:** it deliberately stops on Mac builds other than `26B123`, and its additional device allowlist covers all models capable of iPadOS 13 or later that lack official Sidecar support. Run iPadOS 13 or later on the receiver; the discovery API does not report its OS version, so the app cannot enforce that minimum. Allowlisting enables connection attempts and does not establish hardware compatibility. The app's macOS 13 deployment target is not a claim that it runs on macOS 13–27.
 
 The iPad 5 result comes from the original connection flow and a subsequent user session. Later hardening changes have automated test coverage but have not been physically retested. Login/startup behavior, Wi-Fi-only operation and reboot persistence are also unverified. USB attachment and trust were tested; that does not establish that all display traffic used USB.
 
@@ -35,7 +37,7 @@ See the [full compatibility matrix](docs/COMPATIBILITY.md) for details.
 
 ## Install
 
-[v0.1.0](https://github.com/nixboi42/SideHustle/releases/tag/v0.1.0) is distributed as source. There is no prebuilt app download yet.
+Version 0.2.0 is distributed as source. There is no prebuilt app download yet.
 
 On a compatible Mac, install Xcode or Apple's Command Line Tools, then build and install:
 

@@ -1,3 +1,18 @@
+# Source release updates
+
+## v0.2.0
+
+The owner requested the expanded legacy-iPad allowlist, a push to GitHub and a new
+tag. Version 0.2.0 / build 2 includes Air 2, mini 4 and iPad (5th generation), both
+radio variants. This remains a source-only experimental preview. No new hardware
+validation, signing or notarization is claimed. Inspect hosted CI for the exact
+source commit before tagging; document any unavailable checks explicitly.
+
+The following section records the historical initial-publication procedure and
+its original gates; it is not a new approval requirement for this authorized update.
+
+---
+
 # Source publication procedure — v0.1.0
 
 Status: locally prepared, not published. Proposed title: **SideHustle v0.1.0 —

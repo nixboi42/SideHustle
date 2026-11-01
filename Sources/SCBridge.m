@@ -23,7 +23,20 @@
 @end
 
 BOOL SCAllowPeer(BOOL nativeEligible, BOOL isIPad, NSString *model) {
-    return isIPad && (nativeEligible || [model isEqualToString:@"iPad6,11"] || [model isEqualToString:@"iPad6,12"]);
+    if(!isIPad)return NO;
+    if(nativeEligible)return YES;
+    // All iPads capable of iPadOS 13 that lack official Sidecar support.
+    // Match exact Wi-Fi/cellular identifiers; never allow a whole model prefix.
+    static NSSet<NSString *> *legacyModels;
+    static dispatch_once_t once;
+    dispatch_once(&once,^{
+        legacyModels=[NSSet setWithArray:@[
+            @"iPad5,1", @"iPad5,2",   // iPad mini 4
+            @"iPad5,3", @"iPad5,4",   // iPad Air 2
+            @"iPad6,11", @"iPad6,12"  // iPad (5th generation)
+        ]];
+    });
+    return model && [legacyModels containsObject:model];
 }
 
 // The caller supplies a readable byte span; never trust load-command sizes.

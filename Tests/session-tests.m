@@ -48,7 +48,14 @@ int main(void) {@autoreleasepool {
     }
     require(SCAllowPeer(NO,YES,@"iPad6,11"),@"physical iPad 5 allowed locally");
     require(SCAllowPeer(NO,YES,@"iPad6,12"),@"cellular variant allowed locally");
-    require(!SCAllowPeer(NO,YES,@"iPad5,3"),@"unreviewed older iPad remains excluded");
+    for(NSString *model in @[@"iPad5,1",@"iPad5,2",@"iPad5,3",@"iPad5,4",@"iPad6,11",@"iPad6,12"]) {
+        require(SCAllowPeer(NO,YES,model),@"iPadOS 13 legacy model allowed");
+        require(!SCAllowPeer(NO,NO,model),@"legacy identifier requires iPad device type");
+        require(!SCAllowPeer(YES,NO,model),@"native predicate cannot bypass iPad type");
+    }
+    for(NSString *model in @[@"iPad4,1",@"iPad4,2",@"iPad4,3",@"iPad4,4",@"iPad4,5",@"iPad4,6",@"iPad4,7",@"iPad4,8",@"iPad4,9",@"iPad5,10",@"iPad6,1",@"iPad6,110",@"iPad99,1",@""]) {
+        require(!SCAllowPeer(NO,YES,model),@"pre-iPadOS 13 and unknown identifiers excluded");
+    }
     require(!SCAllowPeer(YES,NO,@"iPhone14,4"),@"non-iPad excluded even with true predicate");
     require(SCAllowPeer(YES,YES,@"iPad7,5"),@"native-supported iPad retained");
     require(SCValidDiscoveryCollections(@[],@[]),@"empty arrays are valid");

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 — expanded legacy iPad eligibility
+
+- Enable iPad Air 2 and iPad mini 4, Wi-Fi and cellular, alongside iPad (5th generation).
+- Cover every iPad model capable of iPadOS 13 or later without official Sidecar support.
+- Preserve native eligibility and exact Mac build/framework/ABI guards.
+- Add model-policy regression coverage and document model identifiers and receiver OS limits.
+- Bump the app to version 0.2.0 / build 2. Newly enabled models remain experimentally allowlisted, not physically verified.
+
 ## 0.1.0 — experimental source preview (publication pending)
 
 - Native menu bar app with device selection and connect/disconnect controls.
