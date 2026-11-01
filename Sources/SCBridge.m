@@ -1,7 +1,6 @@
 #import "SCBridge.h"
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 #import <objc/runtime.h>
-#import <mach-o/loader.h>
 #import <sys/sysctl.h>
 #import <dlfcn.h>
 
@@ -39,22 +38,24 @@ BOOL SCAllowPeer(BOOL nativeEligible, BOOL isIPad, NSString *model) {
     return model && [legacyModels containsObject:model];
 }
 
-// The caller supplies a readable byte span; never trust load-command sizes.
-BOOL SCFrameworkUUIDMatches(const void *commands, size_t length, uint32_t count) {
-    if(!commands || length>(1U<<20) || count>length/sizeof(struct load_command))return NO;
-    const uint8_t *bytes=commands;size_t offset=0;BOOL matched=NO,found=NO;
-    for(uint32_t i=0;i<count;i++) {
-        if(length-offset<sizeof(struct load_command))return NO;
-        struct load_command command;memcpy(&command,bytes+offset,sizeof(command));
-        if(command.cmdsize<sizeof(command) || command.cmdsize>length-offset || command.cmdsize%8)return NO;
-        if(command.cmd==LC_UUID) {
-            if(found || command.cmdsize!=sizeof(struct uuid_command))return NO;
-            struct uuid_command uuid;memcpy(&uuid,bytes+offset,sizeof(uuid));found=YES;
-            matched=[[[[NSUUID alloc]initWithUUIDBytes:uuid.uuid]UUIDString]isEqualToString:@"0892FBEC-B253-34DF-946C-BC97FC532F00"];
-        }
-        offset+=command.cmdsize;
+// Compare callable types, not compiler-specific stack sizes/argument offsets.
+BOOL SCMethodMatchesSignature(Class type, SEL selector, BOOL classMethod, const char *encoding) {
+    if(!type)return NO;
+    Method method=classMethod?class_getClassMethod(type,selector):class_getInstanceMethod(type,selector);
+    if(!method)return NO;
+    NSMethodSignature *expected=[NSMethodSignature signatureWithObjCTypes:encoding];
+    if(method_getNumberOfArguments(method)!=expected.numberOfArguments)return NO;
+    char *actual=method_copyReturnType(method);
+    BOOL matches=actual && !strcmp(actual,expected.methodReturnType);
+    free(actual);
+    if(!matches)return NO;
+    for(unsigned int i=0;i<expected.numberOfArguments;i++) {
+        actual=method_copyArgumentType(method,i);
+        matches=actual && !strcmp(actual,[expected getArgumentTypeAtIndex:i]);
+        free(actual);
+        if(!matches)return NO;
     }
-    return found && matched && offset==length;
+    return YES;
 }
 
 // Bound work and reject malformed native-service responses before using them.
@@ -81,42 +82,38 @@ static NSError *SCError(NSInteger code, NSString *message) {
 }
 - (instancetype)initWithError:(NSError **)error {
     if (!(self=[super init])) return nil;
+    if(![NSProcessInfo.processInfo isOperatingSystemAtLeastVersion:(NSOperatingSystemVersion){13,0,0}]) {
+        if(error)*error=SCError(2,@"SideHustle requires macOS 13 or later.");return nil;
+    }
+    // Build is diagnostic metadata; it must not decide framework compatibility.
     char build[64]={0}; size_t n=sizeof(build);
-    if (sysctlbyname("kern.osversion",build,&n,NULL,0)!=0 || n==0 || n>sizeof(build) || build[n-1]!=0) {
-        if(error)*error=SCError(1,@"Cannot read this macOS build."); return nil;
-    }
-    _build=@(build);
-    if (strcmp(build,"26B123")) {
-        if(error)*error=SCError(2,@"This preview supports macOS build 26B123 only. Native APIs must be reviewed for other builds."); return nil;
-    }
+    if(sysctlbyname("kern.osversion",build,&n,NULL,0)==0 && n>0 && n<=sizeof(build) && build[n-1]==0)
+        _build=@(build);
+    else _build=NSProcessInfo.processInfo.operatingSystemVersionString;
     _framework=dlopen("/System/Library/PrivateFrameworks/SidecarCore.framework/Versions/A/SidecarCore",RTLD_LAZY|RTLD_LOCAL);
     _eligible=_framework?(BOOL(*)(id))dlsym(_framework,"SidecarDisplayIsSupportedReceivingDevice"):NULL;
-    Dl_info info={0};
-    if (!_eligible || !dladdr((void *)_eligible,&info)) {
-        if(error)*error=SCError(3,@"The installed Sidecar framework is unavailable."); return nil;
-    }
-    const struct mach_header_64 *h=info.dli_fbase;
-    if(h->magic!=MH_MAGIC_64) { if(error)*error=SCError(4,@"Unexpected framework image.");return nil; }
-    if(!SCFrameworkUUIDMatches(h+1,h->sizeofcmds,h->ncmds)) {
-        if(error)*error=SCError(5,@"Sidecar framework version changed. Connection controls are disabled.");return nil;
+    if(!_eligible) {
+        if(error)*error=SCError(3,@"The installed Sidecar framework is unavailable or missing required APIs.");return nil;
     }
     Class svc=NSClassFromString(@"SidecarService"),mgr=NSClassFromString(@"SidecarDisplayManager");
     _deviceClass=NSClassFromString(@"SidecarDevice");
+    if(!svc || !mgr || !_deviceClass) {
+        if(error)*error=SCError(6,@"Required Sidecar classes are unavailable. Connection controls are disabled.");return nil;
+    }
     NSArray *checks=@[
-        @[svc?:[NSObject class],@"serviceWithName:",@YES,@"@24@0:8@16"],
-        @[svc?:[NSObject class],@"_devicesByForcingFetchFromRelay:",@NO,@"@20@0:8B16"],
-        @[mgr?:[NSObject class],@"sharedManager",@YES,@"@16@0:8"],
-        @[mgr?:[NSObject class],@"connectedDevices",@NO,@"@16@0:8"],
-        @[mgr?:[NSObject class],@"connectToDevice:completion:",@NO,@"v32@0:8@16@?24"],
-        @[mgr?:[NSObject class],@"disconnectFromDevice:completion:",@NO,@"v32@0:8@16@?24"],
-        @[_deviceClass?:[NSObject class],@"model",@NO,@"@16@0:8"],
-        @[_deviceClass?:[NSObject class],@"deviceType",@NO,@"@16@0:8"],
-        @[_deviceClass?:[NSObject class],@"name",@NO,@"@16@0:8"],
-        @[_deviceClass?:[NSObject class],@"identifier",@NO,@"@16@0:8"]];
+        @[svc,@"serviceWithName:",@YES,@"@24@0:8@16"],
+        @[svc,@"_devicesByForcingFetchFromRelay:",@NO,@"@20@0:8B16"],
+        @[mgr,@"sharedManager",@YES,@"@16@0:8"],
+        @[mgr,@"connectedDevices",@NO,@"@16@0:8"],
+        @[mgr,@"connectToDevice:completion:",@NO,@"v32@0:8@16@?24"],
+        @[mgr,@"disconnectFromDevice:completion:",@NO,@"v32@0:8@16@?24"],
+        @[_deviceClass,@"model",@NO,@"@16@0:8"],
+        @[_deviceClass,@"deviceType",@NO,@"@16@0:8"],
+        @[_deviceClass,@"name",@NO,@"@16@0:8"],
+        @[_deviceClass,@"identifier",@NO,@"@16@0:8"]];
     for(NSArray *c in checks) {
         SEL sel=NSSelectorFromString(c[1]);
-        Method m=[c[2]boolValue]?class_getClassMethod(c[0],sel):class_getInstanceMethod(c[0],sel);
-        if(!m || strcmp(method_getTypeEncoding(m),[c[3]UTF8String])) {
+        if(!SCMethodMatchesSignature(c[0],sel,[c[2]boolValue],[c[3]UTF8String])) {
             if(error)*error=SCError(6,@"Native API compatibility check failed. Connection controls are disabled.");return nil;
         }
     }

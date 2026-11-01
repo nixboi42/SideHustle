@@ -2,12 +2,13 @@
 
 | Configuration | Status | Evidence/limit |
 |---|---|---|
-| Apple silicon, macOS build 26B123 + exact checked framework UUID, iPad6,11 / iPadOS 16.7.16 (20H392) | Verified working historically | Original harness and later user session; see HARDWARE-VALIDATION.md. Hardened app not physically retested. |
+| Apple silicon, macOS build 26B123 (historical evidence), iPad6,11 / iPadOS 16.7.16 (20H392) | Verified working historically | Original harness and later user session; see HARDWARE-VALIDATION.md. Hardened app not physically retested. |
 | Hardened app discovery validation and connect lifecycle with fake backend | Partially tested | Compilation and simulated lifecycle only in this audit; no new discovery or connection requests. |
 | iPad6,12 (cellular iPad 5) on reviewed host | Experimental | Explicit local allowlist; no physical validation. |
 | Natively eligible iPads on reviewed host | Untested | Native eligibility retained; no broader hardware claim. |
 | Wi-Fi-only or exclusively wired media routing | Untested | USB trust is historical evidence, not transport proof. |
-| Other macOS builds/framework UUIDs; Intel Mac | Unsupported | Preview build/ABI/architecture guards; no bypass option. |
+| Apple silicon, macOS 13 or later, other builds/framework UUIDs | Enabled with runtime API checks | Required symbols/classes/method types must match; no physical validation on additional OS versions. |
+| macOS earlier than 13; Intel Mac | Unsupported | Minimum OS and arm64 build target. |
 | iPad Air 2 (`iPad5,3`, `iPad5,4`) on reviewed host | Experimental | Wi-Fi/cellular allowlisted; no physical validation. |
 | iPad mini 4 (`iPad5,1`, `iPad5,2`) on reviewed host | Experimental | Wi-Fi/cellular allowlisted; no physical validation. |
 | Other natively ineligible models | Unsupported | Excluded by caller policy. |
@@ -16,8 +17,8 @@
 No jailbreak or security reduction is implemented. Apple Account/2FA and ordinary
 trust are prerequisites. No legacy iOS receiver is included. Native Sidecar owns
 video, input and authentication. OS updates may break this private API integration.
-The original report labels the host macOS 27.2 with build 26B123; this audit relies
-on the exact build guard and has not independently certified the marketing version.
+The original report labels the host macOS 27.2 with build 26B123; the marketing version has not been independently certified. Version 0.3.0 no longer
+uses that build or framework UUID to gate compatibility.
 
 
 ## Receiver model scope (v0.2.0)
@@ -42,4 +43,20 @@ not an OS-version check: the checked discovery API supplies no receiver OS versi
 Native eligibility is still honored for other iPads. No model name is spoofed and
 no framework is patched. Only the historical iPad6,11/iPadOS 16.7.16 combination
 has physical evidence; newly enabled models and other receiver OS versions need
-hardware testing. All existing host build/UUID/ABI guards remain mandatory.
+hardware testing. Runtime API/type checks and the macOS 13 minimum remain mandatory.
+
+## Host compatibility (v0.3.0)
+
+The arm64 app targets macOS 13.0 and later. Build numbers and framework UUIDs are
+not compatibility requirements. Initialization requires SidecarCore, the native
+eligibility and display-service symbols, the Sidecar service/manager/device
+classes and the methods used for discovery and connection. Method checks compare
+return/argument types and argument count, including block parameters; compiler
+stack-frame sizes and argument offsets are ignored. Missing or incompatible APIs
+disable connection controls before creating a service or requesting discovery.
+
+CI runs mock lifecycle/type checks, static analysis and an arm64 app build on
+macOS 14, 15 and 26 runners. macOS 13 is the deployment minimum but has no hosted
+runner in this matrix. CI does not establish physical receiver compatibility or
+validate private API behavior on every supported OS. The only physical evidence
+remains the historical configuration above.

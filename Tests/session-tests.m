@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "SCBridge.h"
-#import <mach-o/loader.h>
+#import <objc/runtime.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
 
 @interface FakeBackend : NSObject <SCBackend>
@@ -25,27 +25,17 @@ static void tick(NSTimeInterval duration) {
     while(end.timeIntervalSinceNow>0)[[NSRunLoop mainRunLoop]runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.001]];
 }
 int main(void) {@autoreleasepool {
-    struct uuid_command command={.cmd=LC_UUID,.cmdsize=sizeof(struct uuid_command)};
-    [[[NSUUID alloc]initWithUUIDString:@"0892FBEC-B253-34DF-946C-BC97FC532F00"]getUUIDBytes:command.uuid];
-    require(SCFrameworkUUIDMatches(&command,sizeof(command),1),@"reviewed UUID matches");
-    require(!SCFrameworkUUIDMatches(&command,sizeof(command)-1,1),@"truncated command rejected");
-    require(!SCFrameworkUUIDMatches(NULL,0,0),@"null command span rejected");
-    command.cmdsize=0;require(!SCFrameworkUUIDMatches(&command,sizeof(command),1),@"zero command size rejected");
-    command.cmdsize=UINT32_MAX;require(!SCFrameworkUUIDMatches(&command,sizeof(command),1),@"oversized command rejected");
-    command.cmdsize=sizeof(command);command.uuid[0]^=1;
-    require(!SCFrameworkUUIDMatches(&command,sizeof(command),1),@"changed UUID fails closed");
-    command.uuid[0]^=1;
-    struct uuid_command duplicate[2]={command,command};
-    require(!SCFrameworkUUIDMatches(duplicate,sizeof(duplicate),2),@"duplicate UUID rejected");
-    uint8_t fuzz[256];uint32_t random=1;
-    for(unsigned iteration=0;iteration<10000;iteration++) {
-        for(unsigned i=0;i<sizeof(fuzz);i++){random=random*1664525U+1013904223U;fuzz[i]=(uint8_t)(random>>24);}
-        if(iteration%3) {
-            struct load_command header={.cmd=iteration%2?LC_UUID:LC_SEGMENT_64,.cmdsize=(random%264)&~7U};
-            memcpy(fuzz,&header,sizeof(header));
-        }
-        (void)SCFrameworkUUIDMatches(fuzz,iteration%257,iteration%40);
-    }
+    require(SCMethodMatchesSignature(FakeBackend.class,@selector(connectedCount),NO,[[NSString stringWithFormat:@"%s16@0:8",@encode(NSUInteger)]UTF8String]),@"runtime integer signature matches");
+    require(SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),NO,"v32@0:8@16@?24"),@"object and block arguments match");
+    require(SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),NO,"v40@0:8@24@?32"),@"stack size and offsets do not restrict OS builds");
+    require(!SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),NO,"v32@0:8@16@24"),@"object cannot replace completion block");
+    require(!SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),NO,"@32@0:8@16@?24"),@"changed return type rejected");
+    require(!SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),NO,"v24@0:8@16"),@"missing argument rejected");
+    require(!SCMethodMatchesSignature(FakeBackend.class,@selector(connect:completion:),YES,"v32@0:8@16@?24"),@"class and instance methods distinguished");
+    require(!SCMethodMatchesSignature(FakeBackend.class,NSSelectorFromString(@"missingSidecarMethod"),NO,"v16@0:8"),@"missing method rejected");
+    require(SCMethodMatchesSignature(FakeBackend.class,@selector(new),YES,"@16@0:8"),@"inherited class method matches");
+    require(!SCMethodMatchesSignature(FakeBackend.class,@selector(setExisting:),NO,"v24@0:8d16"),@"changed scalar argument rejected");
+    require(!SCMethodMatchesSignature(Nil,@selector(connectedCount),NO,"Q16@0:8"),@"missing class rejected");
     require(SCAllowPeer(NO,YES,@"iPad6,11"),@"physical iPad 5 allowed locally");
     require(SCAllowPeer(NO,YES,@"iPad6,12"),@"cellular variant allowed locally");
     for(NSString *model in @[@"iPad5,1",@"iPad5,2",@"iPad5,3",@"iPad5,4",@"iPad6,11",@"iPad6,12"]) {

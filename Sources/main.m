@@ -97,7 +97,7 @@ static NSString *const AutoKey=@"ConnectOnceOnLaunch";
     _loginStatus=[self label:@"" size:12 color:NSColor.secondaryLabelColor];[stack addArrangedSubview:_loginStatus];
     NSStackView *links=[NSStackView stackViewWithViews:@[[self button:@"Display Settings…" action:@selector(openDisplays:)],[self button:@"Login Items…" action:@selector(openLogin:)],[self button:@"Save Diagnostics…" action:@selector(saveDiagnostics:)]]];links.spacing=8;[stack addArrangedSubview:links];
     [stack addArrangedSubview:[self label:@"Use the same Apple Account with 2FA. For USB, unlock the iPad and trust this Mac. Quitting leaves an established Sidecar session running." size:12 color:NSColor.secondaryLabelColor]];
-    [stack addArrangedSubview:[self label:@"Preview • macOS build 26B123 • No system patch required" size:11 color:NSColor.tertiaryLabelColor]];
+    [stack addArrangedSubview:[self label:@"Preview • macOS 13 or later • No system patch required" size:11 color:NSColor.tertiaryLabelColor]];
     [self updateLogin];
 }
 - (void)record:(NSDictionary *)event {

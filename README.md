@@ -26,10 +26,12 @@ No jailbreak or administrator privileges are required by SideHustle. Normal Appl
 | iPad mini 4 (`iPad5,1`, `iPad5,2`) | Wi-Fi and cellular enabled; experimental and untested. |
 | Older iPads unable to run iPadOS 13 | Excluded. |
 | Apple-supported iPads | Apple's eligibility decision is retained; not separately tested with SideHustle. |
-| **Apple silicon Mac, macOS 27.2 / build `26B123`** | Current runtime target. The app also checks the installed Sidecar framework for compatibility. |
-| Other macOS builds or Intel Macs | Not supported by v0.2.0. |
+| **Apple silicon Mac, macOS 13 or later** | No build/UUID allowlist. Required Sidecar symbols, classes and method types are checked at runtime. Other OS versions need physical testing. |
+| macOS earlier than 13; Intel Macs | Unsupported by the current arm64 app. |
 
-SideHustle is intended to make Sidecar available on unsupported iPads. **The current release does not yet support a general macOS or iPadOS version range:** it deliberately stops on Mac builds other than `26B123`, and its additional device allowlist covers all models capable of iPadOS 13 or later that lack official Sidecar support. Run iPadOS 13 or later on the receiver; the discovery API does not report its OS version, so the app cannot enforce that minimum. Allowlisting enables connection attempts and does not establish hardware compatibility. The app's macOS 13 deployment target is not a claim that it runs on macOS 13–27.
+SideHustle now accepts macOS 13 and later on Apple silicon without requiring one specific OS build or framework UUID. It checks the required Sidecar APIs before enabling connection controls and stops with an error if they are unavailable or have incompatible method types. Private API behavior can still change even when signatures match; this is experimental compatibility, not physical validation of every OS version.
+
+The additional device allowlist covers all models capable of iPadOS 13 or later that lack official Sidecar support. Run iPadOS 13 or later on the receiver; the discovery API does not report its OS version, so the app cannot enforce that minimum. Allowlisting enables connection attempts and does not establish hardware compatibility.
 
 The iPad 5 result comes from the original connection flow and a subsequent user session. Later hardening changes have automated test coverage but have not been physically retested. Login/startup behavior, Wi-Fi-only operation and reboot persistence are also unverified. USB attachment and trust were tested; that does not establish that all display traffic used USB.
 
@@ -37,7 +39,7 @@ See the [full compatibility matrix](docs/COMPATIBILITY.md) for details.
 
 ## Install
 
-Version 0.2.0 is distributed as source. There is no prebuilt app download yet.
+Version 0.3.0 is distributed as source. There is no prebuilt app download yet.
 
 On a compatible Mac, install Xcode or Apple's Command Line Tools, then build and install:
 
@@ -73,7 +75,7 @@ Startup connection waits up to ten minutes for the selected iPad and makes one a
 ## Good to know
 
 - SideHustle uses Apple's native Sidecar services. It does not permanently change Apple's supported-device list or guarantee that an unsupported iPad will appear in the standard menu after a reboot.
-- macOS updates can change private Sidecar APIs. If the app reports an unsupported build or framework, use a compatible release rather than removing its checks.
+- macOS updates can change private Sidecar APIs. If the app reports unavailable or incompatible APIs, use a compatible release rather than removing its checks.
 - On iPadOS 16, Sidecar offers limited touch gestures; SideHustle does not add general finger-touch control of Mac apps.
 - A connection timeout requests native cleanup and blocks further attempts in that app session. Check Display Settings before reopening. A stalled Apple service can also delay the app's UI and timers.
 

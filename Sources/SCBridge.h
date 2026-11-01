@@ -10,7 +10,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic) BOOL connected;
 @end
 
-BOOL SCFrameworkUUIDMatches(const void * _Nullable commands, size_t length, uint32_t count);
+// encoding is a trusted Objective-C method encoding supplied by the caller.
+BOOL SCMethodMatchesSignature(Class _Nullable type, SEL selector, BOOL classMethod, const char *encoding);
 BOOL SCValidDiscoveryCollections(id _Nullable raw, id _Nullable connected);
 BOOL SCValidPeerMetadata(id _Nullable model, id _Nullable type, id _Nullable identifier, id _Nullable name);
 

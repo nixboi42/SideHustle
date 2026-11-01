@@ -1,6 +1,8 @@
 # Troubleshooting
 
-Unsupported build/framework/API: stop and report redacted build/model information.
+Unavailable/incompatible framework/API: the app requires macOS 13 or later on
+Apple silicon and checks required native symbols, classes and method types.
+Report redacted build/model information if those checks fail.
 Do not remove the guards or patch Apple system components.
 
 No iPad: use the same Apple Account with 2FA, unlock the iPad, and complete ordinary

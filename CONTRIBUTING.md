@@ -6,7 +6,7 @@ Use Xcode or Command Line Tools and Python 3. Run `bash scripts/test.sh`,
 never a connected device. Do not initiate physical sessions or change security
 settings as part of automated tests.
 
-Keep changes small. Preserve exact build/UUID/ABI guards, normal Apple trust and
+Keep changes small. Preserve runtime API/type checks, the macOS 13 minimum, normal Apple trust and
 one-request/timeout semantics. Describe private API and privacy changes explicitly.
 Do not contribute firmware, Apple executables, copied disassembly implementations,
 extracted headers, pairing records or personal diagnostics. Document independently

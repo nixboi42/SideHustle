@@ -1,5 +1,13 @@
 # Source release updates
 
+## v0.3.0
+
+The owner requested macOS compatibility across the app's declared OS range, a
+push and a new tag. Version 0.3.0 / build 3 replaces the fixed build/UUID gates
+with runtime API/type validation on macOS 13 and later (Apple silicon). Inspect
+the macOS CI matrix before tagging. No expanded physical validation, signed
+binary release or notarization is claimed.
+
 ## v0.2.0
 
 The owner requested the expanded legacy-iPad allowlist, a push to GitHub and a new

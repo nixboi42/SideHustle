@@ -5,7 +5,11 @@ on:
 permissions: {}
 jobs:
   macos:
-    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15, macos-26]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
     env:
       SIDECAR_SIGNING_IDENTITY: '-'
