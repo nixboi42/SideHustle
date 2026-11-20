@@ -42,7 +42,7 @@ static NSString *const AutoKey=@"ConnectOnceOnLaunch";
     (void)note;_events=[NSMutableArray array];_peers=@[];
     _autoConsumed=self.safePreview;_autoDeadline=[NSDate dateWithTimeIntervalSinceNow:600];
     NSError *error=nil;_backend=[[SCNativeBackend alloc]initWithError:&error];
-    _session=[[SCSession alloc]initWithBackend:_backend timeout:30];
+    _session=[[SCSession alloc]initWithBackend:_backend timeout:60];
     __weak SCApp *weakSelf=self;
     _session.changed=^(NSString *status){
         SCApp *app=weakSelf;if(!app)return;
@@ -61,16 +61,57 @@ static NSString *const AutoKey=@"ConnectOnceOnLaunch";
 - (void)buildMenu {
     _statusItem=[NSStatusBar.systemStatusBar statusItemWithLength:NSVariableStatusItemLength];
     _statusItem.button.image=[NSImage imageWithSystemSymbolName:@"display.2" accessibilityDescription:@"SideHustle"];
-    NSMenu *menu=[NSMenu new];
-    for(NSArray *entry in @[@[@"SideHustle…",NSStringFromSelector(@selector(showWindow:)),@""],@[@"Display Settings…",NSStringFromSelector(@selector(openDisplays:)),@""],@[@"Quit SideHustle",NSStringFromSelector(@selector(quit:)),@"q"]]) {
-        NSMenuItem *item=[[NSMenuItem alloc]initWithTitle:entry[0] action:NSSelectorFromString(entry[1]) keyEquivalent:entry[2]];
-        item.target=self;[menu addItem:item];
-    }
-    _statusItem.menu=menu;
+    [self updateMenu];
     NSMenu *main=[NSMenu new];NSMenuItem *root=[NSMenuItem new];[main addItem:root];
     NSMenu *application=[NSMenu new];root.submenu=application;
     NSMenuItem *quit=[[NSMenuItem alloc]initWithTitle:@"Quit SideHustle" action:@selector(quit:) keyEquivalent:@"q"];quit.target=self;
     [application addItem:quit];NSApp.mainMenu=main;
+}
+- (void)updateMenu {
+    NSMenu *menu=[NSMenu new];
+    BOOL busy=_session.busy;
+    if(_peers.count==0) {
+        NSMenuItem *none=[[NSMenuItem alloc]initWithTitle:@"No iPads Detected" action:NULL keyEquivalent:@""];
+        none.enabled=NO;[menu addItem:none];
+    } else {
+        NSMenuItem *section=[[NSMenuItem alloc]initWithTitle:@"iPads" action:NULL keyEquivalent:@""];
+        section.enabled=NO;[menu addItem:section];
+        for(SCPeer *peer in _peers) {
+            NSString *title=[NSString stringWithFormat:@"%@ (%@)",peer.name,peer.model];
+            NSMenuItem *item=[[NSMenuItem alloc]initWithTitle:title action:@selector(menuSelectDevice:) keyEquivalent:@""];
+            item.target=self;item.representedObject=peer;
+            item.state=peer.connected?NSControlStateValueOn:NSControlStateValueOff;
+            item.enabled=!busy && !self.safePreview && (_backend!=nil);
+            [menu addItem:item];
+        }
+    }
+    [menu addItem:[NSMenuItem separatorItem]];
+    for(NSArray *entry in @[@[@"Refresh Devices",NSStringFromSelector(@selector(refresh:)),@""],@[@"SideHustle…",NSStringFromSelector(@selector(showWindow:)),@""],@[@"Display Settings…",NSStringFromSelector(@selector(openDisplays:)),@""],@[@"Quit SideHustle",NSStringFromSelector(@selector(quit:)),@"q"]]) {
+        NSMenuItem *item=[[NSMenuItem alloc]initWithTitle:entry[0] action:NSSelectorFromString(entry[1]) keyEquivalent:entry[2]];
+        item.target=self;
+        if([entry[0] isEqualToString:@"Refresh Devices"]) item.enabled=!busy;
+        [menu addItem:item];
+    }
+    _statusItem.menu=menu;
+}
+- (void)menuSelectDevice:(NSMenuItem *)sender {
+    if(self.safePreview)return;
+    SCPeer *peer=(SCPeer *)sender.representedObject;
+    if(!peer)return;
+    // Set this peer as the selected item in the dropdown
+    for(NSUInteger i=0;i<_peers.count;i++) {
+        if([_peers[i].identifier isEqualToString:peer.identifier]) {
+            [_devices selectItemAtIndex:(NSInteger)i];
+            break;
+        }
+    }
+    [NSUserDefaults.standardUserDefaults setObject:peer.identifier forKey:PreferredKey];
+    [self updateControls];
+    if(peer.connected) {
+        [self disconnect:nil];
+    } else {
+        [self connect:nil];
+    }
 }
 - (void)buildWindow {
     _window=[[NSWindow alloc]initWithContentRect:NSMakeRect(0,0,550,590) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable backing:NSBackingStoreBuffered defer:NO];
@@ -117,6 +158,7 @@ static NSString *const AutoKey=@"ConnectOnceOnLaunch";
     _login.enabled=!self.safePreview;
     _detail.stringValue=peer?[NSString stringWithFormat:@"%@ · %@%@",peer.model,peer.connected?@"Connected":@"Available",peer.nativeEligible?@"":@" · Native model list excludes this iPad"]:@"Connect and unlock your iPad, then refresh.";
     _statusItem.button.toolTip=busy?@"SideHustle — working":([_backend connectedCount]?@"SideHustle — Sidecar connected":@"SideHustle");
+    [self updateMenu];
 }
 - (void)refresh:(id)sender {
     (void)sender;if(!_backend||_session.busy)return;

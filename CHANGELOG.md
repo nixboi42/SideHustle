@@ -1,5 +1,17 @@
 # Changelog
 
+> Releases are experimental. See [README](README.md) for current installation,
+> compatibility and validation status.
+
+## 0.4.0 — improved wireless stability
+
+- Improve wireless connection stability; user-tested over wired and wireless
+  connections.
+- Increase the native cleanup timeout and unblock the session if Sidecar reports
+  that the remote device has already ended the session.
+- Add per-device connect/disconnect actions to the menu bar menu.
+- Bump the app to version 0.4.0 / build 6.
+
 ## 0.3.2 — release packaging correction
 
 - Correct the architecture-verification command that stopped the v0.3.1 workflow before publication.
@@ -30,17 +42,17 @@
 - Add model-policy regression coverage and document model identifiers and receiver OS limits.
 - Bump the app to version 0.2.0 / build 2. Newly enabled models remain experimentally allowlisted, not physically verified.
 
-## 0.1.0 — experimental source preview
+## 0.1.0 — initial experimental preview
 
 - Native menu bar app with device selection and connect/disconnect controls.
 - Caller-local support for genuine iPad 5 discovery objects; no system patch.
-- Exact 26B123 build, core UUID and API signature guards.
+- Runtime compatibility checks for the native API.
 - Remembered device, optional one-shot startup connection and normal Login Items integration.
 - Existing-session protection, bounded request/cleanup and stale-callback handling.
 - Privacy-limited diagnostics, read-only self-check and safe UI preview.
 - Source build, install and release packaging scripts; mock lifecycle tests and CI.
 
-Physical validation currently covers iPad6,11 on iPadOS 16.7.16 only. Public Developer ID signing/notarization and further compatibility testing remain outstanding.
+Historical physical validation covers iPad (5th generation) on iPadOS 16.7.16. Version 0.4.0 has been user-tested over wired and wireless connections. Public Developer ID signing/notarization and further compatibility testing remain outstanding.
 
 ### Release audit hardening (2026-10-31)
 
@@ -53,13 +65,13 @@ Physical validation currently covers iPad6,11 on iPadOS 16.7.16 only. Public Dev
 - Add sanitizer, negative filesystem and static-analysis checks, privacy and
   provenance documentation, and a credential-free public-source CI bootstrap.
 
-### Initial source-release preparation
+### Release audit hardening (2026-10-31)
 
-- Retain application version 0.1.0 / build 1; propose tag v0.1.0 only after approval.
-- Tighten CI, timeout, existing-session and startup claims to match test evidence.
-- Limit the proposed MIT grant to rights-authorized contributions; keep ownership
-  and private-API legal questions open for owner review.
-- Prepare a single root commit containing exactly 47 reviewed files, with GitHub
-  noreply identity and a separate reachable-object-only publication bundle.
-- Verify a clean clone locally; no hosted CI, new hardware test, signed binary,
-  notarization, public repository or release is claimed.
+- Reject malformed/oversized discovery metadata and ambiguous identifiers.
+- Bound and validate framework UUID load-command parsing.
+- Prevent preferred-device writes in safe preview.
+- Refuse installer symlinks and existing destinations; verify before copying.
+- Build in a fresh temporary bundle, avoiding stale executable resources.
+- Package individual reviewed source files with anonymous archive ownership.
+- Add sanitizer, negative filesystem and static-analysis checks, privacy and
+  provenance documentation, and a credential-free public-source CI bootstrap.

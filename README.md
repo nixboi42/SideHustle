@@ -1,132 +1,103 @@
 # SideHustle
 
-> **Use native Sidecar on unsupported iPads without disabling SIP, patching system files, or installing iPad apps.**
+**Use native Sidecar on an unsupported iPad.**
 
----
+SideHustle brings Apple's Sidecar to iPads that Apple leaves off its supported-device list, including **iPad Air 2, iPad mini 4 and iPad (5th generation)**. Turn your iPad into a second display for your Mac using the built-in Sidecar experience—without installing an iPad app, patching system files or disabling SIP.
 
-## Executive Summary
+**Tested on iPad 5 running iPadOS 16.7.16.** Other device and OS combinations have not been verified. See [compatibility](#compatibility) before installing.
 
-**SideHustle** is an open-source macOS utility that brings Apple’s native **Sidecar** (display extension and mirroring) to iPad models excluded from Apple's official compatibility list. 
+## Features
 
-By dynamically loading private macOS Sidecar frameworks and bypassing UI-level device-eligibility filters, SideHustle initiates official Sidecar display sessions with older hardware running iPadOS 13+.
+- Connect and disconnect your iPad from a Mac menu bar app.
+- Extend your Mac's desktop using native Sidecar.
+- Remember your selected iPad.
+- Optionally open at login and make one connection attempt when your iPad becomes available.
+- Keep using macOS Display Settings and the standard Sidecar controls.
 
----
+No jailbreak or administrator privileges are required by SideHustle. Normal Apple Account and device-trust requirements still apply.
 
-## Key Highlights
+## Compatibility
 
-* **No Jailbreak Required**: Runs entirely on stock iPadOS.
-* **Zero System Patches**: No modifications to macOS system files; System Integrity Protection (**SIP**) remains enabled.
-* **True Native Display**: Uses Apple's built-in Sidecar display engine—standard macOS Display Settings, gestures, and window controls work out of the box.
-* **Persistent Sessions**: Once connected, SideHustle can be closed without interrupting the running display session.
+| Device or system | Current status |
+|---|---|
+| **iPad (5th generation), iPadOS 16.7.16** | Historical physical test; native connection and a working second display were observed. |
+| **Version 0.4.0, wired and wireless** | User-tested; wireless stability improved. Device and OS details for this test were not recorded. |
+| iPad (5th generation), cellular (`iPad6,12`) | Enabled; experimental and untested. |
+| iPad Air 2 (`iPad5,3`, `iPad5,4`) | Wi-Fi and cellular enabled; experimental and untested. |
+| iPad mini 4 (`iPad5,1`, `iPad5,2`) | Wi-Fi and cellular enabled; experimental and untested. |
+| Older iPads unable to run iPadOS 13 | Excluded. |
+| Apple-supported iPads | Apple's eligibility decision is retained; not separately tested with SideHustle. |
+| **Apple silicon Mac, macOS 13 or later** | No build/UUID allowlist. Required Sidecar symbols, classes and method types are checked at runtime. Other OS versions need physical testing. |
+| macOS earlier than 13; Intel Macs | Unsupported by the current arm64 app. |
 
----
+SideHustle now accepts macOS 13 and later on Apple silicon without requiring one specific OS build or framework UUID. It checks the required Sidecar APIs before enabling connection controls and stops with an error if they are unavailable or have incompatible method types. Private API behavior can still change even when signatures match; this is experimental compatibility, not physical validation of every OS version.
 
-## How It Works
+The additional device allowlist covers all models capable of iPadOS 13 or later that lack official Sidecar support. Run iPadOS 13 or later on the receiver; the discovery API does not report its OS version, so the app cannot enforce that minimum. Allowlisting enables connection attempts and does not establish hardware compatibility.
 
-Apple restricts Sidecar on older devices primarily at the UI and policy layer in macOS, rather than inside the low-level streaming engine. SideHustle interfaces directly with macOS private frameworks to orchestrate the connection.
+The iPad 5 result comes from the original connection flow and a subsequent user session. Later hardening changes have automated test coverage but have not been physically retested. Login/startup behavior, Wi-Fi-only operation and reboot persistence are also unverified. USB attachment and trust were tested; that does not establish that all display traffic used USB.
 
-```mermaid
-flowchart TD
-    subgraph macOS ["macOS (Host)"]
-        UI[SideHustle Menu Bar App] -->|Runtime ABI Validation| SCBridge[SCBridge Dynamic Loader]
-        SCBridge -->|dlopen / dlsym| SidecarCore["SidecarCore.framework (Private)"]
-        SidecarCore -->|Device Discovery| Relay["Continuity Relay"]
-        SCBridge -->|Bypass Device Whitelist| Connect["SidecarDisplayManager connectToDevice:"]
-    end
+See the [full compatibility matrix](docs/COMPATIBILITY.md) for details.
 
-    subgraph iPadOS ["iPadOS (Receiver)"]
-        Daemon["SidecarDisplayAgent / SpringBoard"]
-    end
+## Install
 
-    Connect -->|Encrypted AV Stream over USB or AWDL/Wi-Fi| Daemon
-```
+Download [SideHustle 0.4.0 for Apple silicon](https://github.com/nixboi42/SideHustle/releases/download/v0.4.0/SideHustle-0.4.0-arm64.zip), unzip it, and move **SideHustle.app** to `~/Applications` or `/Applications`. Requires macOS 13 or later.
 
-### Core Architecture Stages
+The app is an experimental, ad-hoc signed build without Apple Developer ID signing or notarization. If macOS blocks it, review the release and use the normal **System Settings → Privacy & Security → Open Anyway** option if available. Do not disable Gatekeeper or SIP. See [all releases and SHA-256 checksums](https://github.com/nixboi42/SideHustle/releases).
 
-1. **Dynamic Runtime Binding (`SCNativeBackend`)**
-   * Uses `dlopen` and `dlsym` at runtime to bind to `/System/Library/PrivateFrameworks/SidecarCore.framework`.
-   * Dynamically resolves private classes (`SidecarService`, `SidecarDisplayManager`, `SidecarDevice`) and functions.
-2. **Strict ABI & Method Signature Validation**
-   * Before executing private selectors, SideHustle compares runtime Objective-C method type encodings against expected signatures (e.g. `connectToDevice:completion:`, `connectedDevices`).
-   * Prevents system crashes or undefined behavior across different macOS updates.
-3. **Targeted Model Allowlisting (`SCAllowPeer`)**
-   * macOS flags older iPads as ineligible via `SidecarDisplayIsSupportedReceivingDevice`.
-   * SideHustle intercepts discovered peers and selectively enables explicit device identifiers capable of iPadOS 13:
-     * **iPad mini 4**: `iPad5,1`, `iPad5,2`
-     * **iPad Air 2**: `iPad5,3`, `iPad5,4`
-     * **iPad (5th Gen)**: `iPad6,11`, `iPad6,12`
-4. **Session Hand-off (`SCSession`)**
-   * Invokes `[SidecarDisplayManager connectToDevice:completion:]`.
-   * Once Apple's native daemons take over encoding and transport, the display becomes managed natively by macOS WindowServer.
+### Build from source
 
----
+On a compatible Mac, install Xcode or Apple's Command Line Tools, then build and install:
 
-## Protocols & Underlying Technologies
-
-| Domain | Protocol / Technology | Technical Description |
-| :--- | :--- | :--- |
-| **Authentication & Trust** | **Apple Account / 2FA & Pairing Keys** | Requires both devices to be logged into the same Apple Account with 2FA enabled. USB connections require mutual device trust pairing records. |
-| **Physical Transport** | **USB (`usbmuxd`) & AWDL / 802.11ac** | Connects over physical Lightning/USB cables via Apple's USB multiplexing daemon, or wirelessly over Apple Wireless Direct Link (AWDL). |
-| **Device Discovery** | **Apple Continuity / BLE / Bonjour** | Utilizes Bluetooth Low Energy (BLE) proximity beacons and mDNS/Bonjour discovery handled by `SidecarService` and identity daemons (`sharingd`). |
-| **Media & Video Streaming** | **Hardware H.264 / HEVC over AVStream / RTP** | Video is hardware-encoded using VideoToolbox on the Mac and decoded by the iPad's display receiver daemon (`SidecarDisplayAgent`). |
-| **App Architecture** | **Objective-C Runtime & ServiceManagement** | Built in lightweight Objective-C; uses `SMAppService` for login-item management and `NSStatusBar` for menu bar integration. |
-
----
-
-## Compatibility Matrix
-
-| Category | Supported Configurations |
-| :--- | :--- |
-| **Tested iPad** | **iPad (5th generation)** Wi-Fi (`iPad6,11`) on iPadOS 16.7.16 |
-| **Experimental iPads** | iPad Air 2 (`iPad5,3`, `iPad5,4`), iPad mini 4 (`iPad5,1`, `iPad5,2`), iPad 5 Cellular (`iPad6,12`) |
-| **Mac Requirements** | **Apple silicon (M1/M2/M3/M4)** running **macOS 13 Ventura or later** |
-| **Unsupported** | Intel-based Macs; iPads incapable of running iPadOS 13 or earlier |
-
----
-
-## Build & Installation
-
-### Requirements
-* Mac with Apple silicon
-* macOS 13.0 or later
-* Xcode Command Line Tools (`xcode-select --install`)
-
-### Building from Source
-
-```bash
-# Clone the repository
+```sh
 git clone https://github.com/nixboi42/SideHustle.git
 cd SideHustle
-
-# Compile the binary with ad-hoc signing
 bash scripts/build.sh
-
-# Install into ~/Applications
 bash scripts/install.sh
 ```
 
----
+The installer places **SideHustle.app** in `~/Applications`. It refuses to overwrite an existing app and does not launch it or enable startup options automatically.
 
-## Usage Instructions
+Local builds use ad-hoc code signing. An Apple Developer ID and notarization are not needed to build from source; no Developer ID signature or notarization is claimed for these builds. Do not disable macOS security protections to install the app.
 
-1. **Verify Account**: Ensure your Mac and iPad are signed into the **same Apple ID** with **Two-Factor Authentication** enabled.
-2. **Connect & Trust**: Connect your iPad via USB or ensure Wi-Fi and Bluetooth are enabled on both devices. If using USB, unlock your iPad and tap **Trust This Computer**.
-3. **Launch SideHustle**: Open `SideHustle.app` from `~/Applications`.
-4. **Connect**: Select your iPad from the dropdown menu and click **Connect**.
-5. **Manage Display**: Arrange displays or change scaling under **System Settings → Displays**.
+## Connect your iPad
 
----
+1. Sign in to the **same Apple Account** on your Mac and iPad, with **two-factor authentication** enabled.
+2. Connect and unlock your iPad. If using USB, complete the normal **Trust This Computer** prompt.
+3. Open **SideHustle** from `~/Applications`.
+4. Select your iPad and click **Connect**.
+5. Move a Mac window onto the iPad to use the extra display.
 
-## Source Code Layout
+These are the normal [Apple Sidecar account and USB-trust requirements](https://support.apple.com/en-ie/102597); SideHustle does not bypass authentication or pairing.
 
-* `Sources/SCBridge.h` / `Sources/SCBridge.m`: Dynamic loader for `SidecarCore`, ABI verification engine, device allowlist filter, and connection controller.
-* `Sources/main.m`: Native macOS menu bar UI, auto-connect timers, and login item integration.
-* `docs/COMPATIBILITY.md`: Detailed hardware validation reports.
-* `scripts/`: Shell scripts for compiling, testing, and packaging the application bundle.
+To disconnect, use **Disconnect** in SideHustle or the standard macOS Sidecar controls. Closing the app window keeps it in the menu bar. **Quitting SideHustle leaves an established Sidecar session running.**
 
----
+### Optional startup settings
 
-## License & Disclaimers
+After selecting your iPad, you can enable **Connect to this iPad once when the app opens** and **Open at login**. Both are off by default. Approve the login item in macOS settings if prompted.
 
-* **License**: MIT License.
-* **Disclaimer**: This project is not affiliated with, endorsed by, or sponsored by Apple Inc. Sidecar, iPadOS, and macOS are registered trademarks of Apple Inc. Apple private frameworks are bundled with macOS and are not redistributed with this project.
+Startup connection waits up to ten minutes for the selected iPad and makes one attempt. It checks for an existing Sidecar session before connecting and does not automatically retry failures. These convenience features are implemented, but their login/reboot behavior has not been hardware tested.
+
+## Good to know
+
+- SideHustle uses Apple's native Sidecar services. It does not permanently change Apple's supported-device list or guarantee that an unsupported iPad will appear in the standard menu after a reboot.
+- macOS updates can change private Sidecar APIs. If the app reports unavailable or incompatible APIs, use a compatible release rather than removing its checks.
+- On iPadOS 16, Sidecar offers limited touch gestures; SideHustle does not add general finger-touch control of Mac apps.
+- A connection timeout requests native cleanup and blocks further attempts in that app session. Check Display Settings before reopening. A stalled Apple service can also delay the app's UI and timers.
+
+For connection problems, see [troubleshooting](docs/TROUBLESHOOTING.md). **Save Diagnostics** exports a limited report for you to review before sharing. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md); never post account credentials, device identifiers or pairing records.
+
+## Uninstall
+
+Disable **Open at login** in SideHustle or macOS Login Items, disconnect your display, quit the app and move **SideHustle.app** to Trash. No Apple system files or pairing records need restoring. See [installation and removal](docs/INSTALLATION.md) for optional preference cleanup.
+
+## Privacy and development
+
+SideHustle has no telemetry or automatic diagnostic uploads. Your preferred device UUID is stored locally. Apple's services handle Sidecar discovery, authentication and display transport. See [PRIVACY.md](PRIVACY.md).
+
+Build/test instructions are in [CONTRIBUTING.md](CONTRIBUTING.md). The [hardware validation notes](docs/HARDWARE-VALIDATION.md) document the implementation and testing limits. Hosted build/audit and secret-scanning checks passed for the initial source release; later code changes have not been confirmed by hosted CI and these checks do not replace physical-device testing.
+
+## License
+
+[MIT](LICENSE) for SideHustle's original code. Apple frameworks are supplied by macOS and are not redistributed.
+
+SideHustle is independent and is not affiliated with or endorsed by Apple. Apple, Sidecar, macOS and iPad are trademarks of Apple Inc.

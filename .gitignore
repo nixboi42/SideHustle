@@ -1,6 +1,7 @@
 /build/
 /dist/
 .DS_Store
+**/.DS_Store
 *.xcuserstate
 *.log
 *diagnostics*.json
@@ -18,3 +19,9 @@
 *.ips
 __pycache__/
 *.pyc
+.AppleDouble
+.LSOverride
+.Spotlight-V100/
+.Trashes/
+ehthumbs.db
+Thumbs.db

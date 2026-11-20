@@ -1,5 +1,8 @@
 # Releasing SideHustle
 
+The current release line is 0.4.0. See [release notes](RELEASE-NOTES.md) for
+the release summary and the README for compatibility and validation status.
+
 GitHub Releases distributes an experimental prebuilt Apple silicon `.app` inside
 a ZIP, a reviewed source archive and `SHA256SUMS`. The app targets macOS 13 or
 later. Binaries are ad-hoc signed; no Developer ID signature, notarization or

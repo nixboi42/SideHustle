@@ -203,8 +203,15 @@ static NSError *SCError(NSInteger code, NSString *message) {
         dispatch_async(dispatch_get_main_queue(),^{
             SCSession *s=weakSelf;if(!s||generation!=s->_generation)return;
             ++s->_generation;s->_busy=NO;[s event:@"disconnect_completion" error:error];
-            if(s.blocked)s.changed(@"Timeout cleanup finished. A late remote connection is still possible. Check Displays; reopen this app only after checking native state.");
-            else s.changed(error?[NSString stringWithFormat:@"Disconnect failed (%@, %ld). Use the standard Sidecar menu.",error.domain,(long)error.code]:@"Disconnected.");
+            BOOL deviceAlreadyGone=(error && [error.domain isEqualToString:@"SidecarErrorDomain"] && error.code==-102);
+            if(deviceAlreadyGone) {
+                s->_blocked=NO;
+                s.changed(@"Disconnected (remote device ended session). Ready to reconnect.");
+            } else if(s.blocked) {
+                s.changed(@"Timeout cleanup finished. A late remote connection is still possible. Check Displays; reopen this app only after checking native state.");
+            } else {
+                s.changed(error?[NSString stringWithFormat:@"Disconnect failed (%@, %ld). Use the standard Sidecar menu.",error.domain,(long)error.code]:@"Disconnected.");
+            }
         });
     }];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,10*NSEC_PER_SEC),dispatch_get_main_queue(),^{

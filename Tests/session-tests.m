@@ -87,6 +87,11 @@ int main(void) {@autoreleasepool {
     [s disconnect:peer];tick(0.01);
     require(!s.busy && b.disconnects==1,@"disconnect error releases busy state");
     b=[FakeBackend new];b.completeDisconnect=YES;
+    b.disconnectError=[NSError errorWithDomain:@"SidecarErrorDomain" code:-102 userInfo:nil];
+    s=[[SCSession alloc]initWithBackend:b timeout:0.01];
+    [s connect:peer];tick(0.04);
+    require(!s.busy && !s.blocked && b.disconnects==1,@"SidecarErrorDomain -102 (device gone) unblocks session");
+    b=[FakeBackend new];b.completeDisconnect=YES;
     s=[[SCSession alloc]initWithBackend:b timeout:1];
     for(int i=0;i<25;i++) {
         [s connect:peer];b.pending(nil);tick(0.002);

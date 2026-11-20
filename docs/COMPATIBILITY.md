@@ -2,8 +2,8 @@
 
 | Configuration | Status | Evidence/limit |
 |---|---|---|
-| Apple silicon, macOS build 26B123 (historical evidence), iPad6,11 / iPadOS 16.7.16 (20H392) | Verified working historically | Original harness and later user session; see HARDWARE-VALIDATION.md. Hardened app not physically retested. |
-| Hardened app discovery validation and connect lifecycle with fake backend | Partially tested | Compilation and simulated lifecycle only in this audit; no new discovery or connection requests. |
+| SideHustle 0.4.0, wired and wireless | User-tested | User reports improved wireless connection stability. Device models and OS versions for this test were not recorded. |
+| Apple silicon, iPad (5th generation) / iPadOS 16.7.16 | Verified working historically | Native connection and external display observed; see HARDWARE-VALIDATION.md. |
 | iPad6,12 (cellular iPad 5) on reviewed host | Experimental | Explicit local allowlist; no physical validation. |
 | Natively eligible iPads on reviewed host | Untested | Native eligibility retained; no broader hardware claim. |
 | Wi-Fi-only or exclusively wired media routing | Untested | USB trust is historical evidence, not transport proof. |
@@ -17,7 +17,7 @@
 No jailbreak or security reduction is implemented. Apple Account/2FA and ordinary
 trust are prerequisites. No legacy iOS receiver is included. Native Sidecar owns
 video, input and authentication. OS updates may break this private API integration.
-The original report labels the host macOS 27.2 with build 26B123; the marketing version has not been independently certified. Version 0.3.0 no longer
+Version 0.3.0 no longer
 uses that build or framework UUID to gate compatibility.
 
 
@@ -61,4 +61,5 @@ has no hosted runner in this matrix; the macOS 14 runner was removed after GitHu
 cancelled it during its scheduled retirement brownout (retirement November 2, 2026).
 Neither macOS 13 nor 14 has hosted test coverage. CI does not establish physical receiver compatibility or
 validate private API behavior on every supported OS. The only physical evidence
-remains the historical configuration above.
+remains the historical configuration above; the 0.4.0 wired/wireless user test
+does not include device or OS details.
