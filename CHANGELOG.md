@@ -64,14 +64,3 @@ Historical physical validation covers iPad (5th generation) on iPadOS 16.7.16. V
 - Package individual reviewed source files with anonymous archive ownership.
 - Add sanitizer, negative filesystem and static-analysis checks, privacy and
   provenance documentation, and a credential-free public-source CI bootstrap.
-
-### Release audit hardening (2026-10-31)
-
-- Reject malformed/oversized discovery metadata and ambiguous identifiers.
-- Bound and validate framework UUID load-command parsing.
-- Prevent preferred-device writes in safe preview.
-- Refuse installer symlinks and existing destinations; verify before copying.
-- Build in a fresh temporary bundle, avoiding stale executable resources.
-- Package individual reviewed source files with anonymous archive ownership.
-- Add sanitizer, negative filesystem and static-analysis checks, privacy and
-  provenance documentation, and a credential-free public-source CI bootstrap.
